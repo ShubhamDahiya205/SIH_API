@@ -53,10 +53,27 @@ def get_annual_rainfall(
     # Calculate total rainfall
     total_rainfall = df["precipitation_sum"].sum()
 
+    # Monthly rainfall
+    df["month"] = df["date"].dt.to_period("M")
+    monthly_rainfall = (
+        df.groupby("month")["precipitation_sum"].sum().round(2).to_dict()
+    )
+    # Convert Period to string (e.g., '2024-09')
+    monthly_rainfall = {str(month): val for month, val in monthly_rainfall.items()}
+
+    # Peak rainfall
+    peak_row = df.loc[df["precipitation_sum"].idxmax()]
+    peak_rainfall = {
+        "date": str(peak_row["date"].date()),
+        "rainfall_mm": round(float(peak_row["precipitation_sum"]), 2),
+    }
+
     return {
         "latitude": lat,
         "longitude": lon,
         "start_date": start_date,
         "end_date": end_date,
         "rainfall_mm": round(float(total_rainfall), 2),
+        "monthly_rainfall_mm": monthly_rainfall,
+        "peak_rainfall": peak_rainfall,
     }
